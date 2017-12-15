@@ -1,54 +1,73 @@
-%global pgmajorversion 9.4
-%global pginstdir %{_libdir}/pgsql
 %global sname plv8
-%global extensions /usr/share/pgsql/extension
 
+%{?!v8_arches:%global v8_arches %arm %ix86 x86_64}
 
 Summary:	V8 Engine Javascript Procedural Language add-on for PostgreSQL
 Name:		%{sname}
-Version:	1.4.4
+Version:	2.1.0
 Release:	1%{?dist}
 License:	BSD
 Group:		Applications/Databases
 Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}.tar.gz
-Patch0:		%{sname}-makefile.patch
+
+Patch0:		plv8-2.1.0-make.patch
+
 URL:		https://github.com/plv8/plv8
 
-BuildRequires:	postgresql-devel >= %{pgmajorversion}, v8-devel >= 3.14.5, gcc-c++
-Requires:	postgresql >= %{pgmajorversion}, v8 >= 3.14.5
+BuildRequires:	postgresql-devel
+BuildRequires:	v8-devel
+BuildRequires:	gcc-c++
+BuildRequires:	perl-interpreter
+
+Requires:	postgresql-server
+Requires:	v8
+ExclusiveArch:	%v8_arches
+
 
 %description
 plv8 is a shared library that provides a PostgreSQL procedural language
 powered by V8 JavaScript Engine. With this program you can write in JavaScript
 your function that is callable from SQL.
 
+
 %prep
-%setup -q -n %{sname}-%{version}
-%patch0 -p0
+%autosetup -p1
+
 
 %build
+# Setup CFLAGS, etc. by hacked %%configure
+%define _configure :
+%configure
+
 make %{?_smp_mflags}
 
+
 %install
-%{__rm} -rf %{buildroot}
 make install DESTDIR=%{buildroot} %{?_smp_mflags}
+
+# TODO
 %{__rm} -f  %{buildroot}%{_datadir}/*.sql
 
-%clean
-%{__rm} -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc COPYRIGHT README Changes doc/%{sname}.md
-%{pginstdir}/%{sname}.so
-%{extensions}/plcoffee--%{version}.sql
-%{extensions}/plcoffee.control
-%{extensions}/plls--%{version}.sql
-%{extensions}/plls.control
-%{extensions}/%{sname}--%{version}.sql
-%{extensions}/%{sname}.control
+%license COPYRIGHT
+%doc README.md Changes doc/%{sname}.md
+%{_libdir}/pgsql/%{sname}.so
+%dir %{_datadir}/pgsql/extension
+%{_datadir}/pgsql/extension/plcoffee--%{version}.sql
+%{_datadir}/pgsql/extension/plcoffee.control
+%{_datadir}/pgsql/extension/plls--%{version}.sql
+%{_datadir}/pgsql/extension/plls.control
+%{_datadir}/pgsql/extension/%{sname}--%{version}.sql
+%{_datadir}/pgsql/extension/%{sname}.control
+
 
 %changelog
+* Fri Dec 15 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-1
+- rebase to 2.1.0
+- cleanup spec, fix {cxx,ld}flags
+
 * Tue Nov 10 2015 Pavel Kajaba <pkajaba@redhat.com> 1.4.4-1
 - Made changes to work under Fedora repos
 

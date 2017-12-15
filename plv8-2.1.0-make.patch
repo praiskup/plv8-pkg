@@ -1,0 +1,55 @@
+From 67526442a50333d70f7165952a6f4c6a94f681f2 Mon Sep 17 00:00:00 2001
+From: Pavel Raiskup <praiskup@redhat.com>
+Date: Fri, 15 Dec 2017 16:38:09 +0100
+Subject: [PATCH 1/2] Drop -lv8_libplatform flag
+
+https://github.com/plv8/plv8/pull/247
+
+v8-devel-6.2.91 doesn't provide the libv8_libplatform.so symbolic
+link, and plv8 builds work fine even without that link.
+---
+ Makefile | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3f59eb8..263d070 100644
+--- a/Makefile
++++ b/Makefile
+@@ -46,8 +46,6 @@ endif
+ SHLIB_LINK += -lv8
+ ifdef V8_OUTDIR
+ SHLIB_LINK += -L$(V8_OUTDIR)
+-else
+-SHLIB_LINK += -lv8_libplatform
+ endif
+ 
+ 
+-- 
+2.14.3
+
+
+From 5964c244b63d87f775e666157d1470ad91eb8e40 Mon Sep 17 00:00:00 2001
+From: Pavel Raiskup <praiskup@redhat.com>
+Date: Fri, 15 Dec 2017 17:28:56 +0100
+Subject: [PATCH 2/2] Take the standard $CXXFLAGS into account.
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 263d070..305999c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -60,7 +60,7 @@ endif
+ 
+ OPTFLAGS = -O2 -std=c++11 -fno-rtti
+ 
+-CCFLAGS = -Wall $(OPTFLAGS) $(OPT_ENABLE_DEBUGGER_SUPPORT)
++CCFLAGS = -Wall $(CXXFLAGS) $(OPTFLAGS) $(OPT_ENABLE_DEBUGGER_SUPPORT)
+ 
+ ifdef V8_SRCDIR
+ override CPPFLAGS += -I$(V8_SRCDIR) -I$(V8_SRCDIR)/include
+-- 
+2.14.3
+
