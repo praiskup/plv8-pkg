@@ -5,7 +5,7 @@
 Summary:	V8 Engine Javascript Procedural Language add-on for PostgreSQL
 Name:		%{sname}
 Version:	2.1.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	BSD
 Group:		Applications/Databases
 Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}.tar.gz
@@ -39,18 +39,14 @@ your function that is callable from SQL.
 %define _configure :
 %configure
 
-make %{?_smp_mflags}
+%make_build
 
 
 %install
-make install DESTDIR=%{buildroot} %{?_smp_mflags}
-
-# TODO
-%{__rm} -f  %{buildroot}%{_datadir}/*.sql
+%make_install
 
 
 %files
-%defattr(-,root,root)
 %license COPYRIGHT
 %doc README.md Changes doc/%{sname}.md
 %{_libdir}/pgsql/%{sname}.so
@@ -64,6 +60,9 @@ make install DESTDIR=%{buildroot} %{?_smp_mflags}
 
 
 %changelog
+* Sat Dec 16 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-2
+- fixes per pre-review by Robert-André Mauchin (rhbz#1036130)
+
 * Fri Dec 15 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-1
 - rebase to 2.1.0
 - cleanup spec, fix {cxx,ld}flags
