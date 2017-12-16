@@ -20,6 +20,7 @@ BuildRequires:	gcc-c++
 BuildRequires:	perl-interpreter
 
 Requires:	postgresql-server
+%{?postgresql_module_requires}
 Requires:	v8
 ExclusiveArch:	%v8_arches
 
@@ -62,6 +63,7 @@ your function that is callable from SQL.
 %changelog
 * Sat Dec 16 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-2
 - fixes per pre-review by Robert-André Mauchin (rhbz#1036130)
+- require proper postgresql-server version
 
 * Fri Dec 15 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-1
 - rebase to 2.1.0
