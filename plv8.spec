@@ -40,7 +40,11 @@ your function that is callable from SQL.
 %define _configure :
 %configure
 
-%make_build
+# rhbz#1517657
+ln -s %{_libdir}/libv8_libplatform.so.? libv8_libplatform.so
+export LDFLAGS="$LDFLAGS -L$PWD"
+
+%make_build RPM_HACK_LDFLAGS="-L$PWD"
 
 
 %install
@@ -64,6 +68,7 @@ your function that is callable from SQL.
 * Sat Dec 16 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-2
 - fixes per pre-review by Robert-André Mauchin (rhbz#1036130)
 - require proper postgresql-server version
+- hack for missing libv8_libplatform.so in v8-devel (rhbz#1517657)
 
 * Fri Dec 15 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-1
 - rebase to 2.1.0
