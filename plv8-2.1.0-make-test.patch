@@ -1,0 +1,91 @@
+From 1dd6feaf8da706242a500e56aecc8b408039fbd4 Mon Sep 17 00:00:00 2001
+From: Pavel Raiskup <praiskup@redhat.com>
+Date: Mon, 18 Dec 2017 14:17:35 +0100
+Subject: [PATCH] tests: add 'make test' target
+
+Proposed in https://github.com/plv8/plv8/pull/247
+
+---
+ .gitignore                 |  4 ++++
+ .travis.yml                |  2 +-
+ Makefile                   | 11 +++++++++++
+ expected/init-local.out.in | 19 +++++++++++++++++++
+ 4 files changed, 35 insertions(+), 1 deletion(-)
+ create mode 100644 expected/init-local.out.in
+
+diff --git a/.gitignore b/.gitignore
+index 34a4f7a..a1dc8e5 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -21,5 +21,9 @@
+ # Test results
+ /results
+ 
++# Test helpers
++init-local.sql
++init-local.out
++
+ # For packaging
+ plv8-*.zip
+diff --git a/.travis.yml b/.travis.yml
+index 2b2ba53..7e1e14f 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -64,7 +64,7 @@ sudo: required
+ dist: trusty
+ 
+ script:
+-  - make && sudo make install && make installcheck
++  - make && make test && sudo make install && make installcheck
+ 
+ after_script:
+   - cat regression.diffs || true
+diff --git a/Makefile b/Makefile
+index f410301..75f5543 100644
+--- a/Makefile
++++ b/Makefile
+@@ -173,5 +173,16 @@ endif
+ 
+ installcheck: integritycheck
+ 
++.PHONY: expected/init-local.out sql/init-local.sql
++
++expected/init-local.out: expected/init-local.out.in
++	sed  "s|MODULE_PATHNAME|$(shell pwd)/plv8|g" $< > $@
++
++sql/init-local.sql: plv8.sql.common
++	sed -e 's/@LANG_NAME@/plv8/g' $< | sed -e "s|MODULE_PATHNAME|$(shell pwd)/plv8|g" | $(CC) -E -P $(CPPFLAGS) -DLANG_plv8 - > $@
++
++test: sql/init-local.sql expected/init-local.out $(EXTENSION).so
++	$(pg_regress_check) $(REGRESS_OPTS) init-local $(filter-out init-extension dialect, $(REGRESS))
++
+ .PHONY: subclean integritycheck
+ include $(PGXS)
+diff --git a/expected/init-local.out.in b/expected/init-local.out.in
+new file mode 100644
+index 0000000..cdf6546
+--- /dev/null
++++ b/expected/init-local.out.in
+@@ -0,0 +1,19 @@
++CREATE FUNCTION plv8_call_handler() RETURNS language_handler
++ AS 'MODULE_PATHNAME' LANGUAGE C;
++CREATE FUNCTION plv8_inline_handler(internal) RETURNS void
++ AS 'MODULE_PATHNAME' LANGUAGE C;
++CREATE FUNCTION plv8_call_validator(oid) RETURNS void
++ AS 'MODULE_PATHNAME' LANGUAGE C;
++CREATE TRUSTED LANGUAGE plv8
++ HANDLER plv8_call_handler
++ INLINE plv8_inline_handler
++ VALIDATOR plv8_call_validator;
++CREATE DOMAIN plv8_int2array AS int2[];
++CREATE DOMAIN plv8_int4array AS int4[];
++CREATE DOMAIN plv8_float4array AS float4[];
++CREATE DOMAIN plv8_float8array AS float8[];
++CREATE OR REPLACE FUNCTION plv8_version ( )
++RETURNS TEXT AS
++$$
++ return "@PLV8_VERSION@";
++$$ LANGUAGE plv8;
+-- 
+2.14.3
+

@@ -1,16 +1,19 @@
 %global sname plv8
 
+%bcond_without check
+
 %{?!v8_arches:%global v8_arches %arm %ix86 x86_64}
 
 Summary:	V8 Engine Javascript Procedural Language add-on for PostgreSQL
 Name:		%{sname}
 Version:	2.1.0
-Release:	2%{?dist}
+Release:	3%{?dist}
 License:	BSD
 Group:		Applications/Databases
 Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}.tar.gz
 
 Patch0:		plv8-2.1.0-make.patch
+Patch1:		plv8-2.1.0-make-test.patch
 
 URL:		https://github.com/plv8/plv8
 
@@ -18,6 +21,9 @@ BuildRequires:	postgresql-devel
 BuildRequires:	v8-devel
 BuildRequires:	gcc-c++
 BuildRequires:	perl-interpreter
+%if %{with check}
+BuildRequires:	postgresql-server
+%endif
 
 Requires:	postgresql-server
 %{?postgresql_module_requires}
@@ -47,6 +53,15 @@ export LDFLAGS="$LDFLAGS -L$PWD"
 %make_build RPM_HACK_LDFLAGS="-L$PWD"
 
 
+%if %{with check}
+%check
+make test || {
+    find -name '*.diffs' -exec cat {} +
+    false
+}
+%endif
+
+
 %install
 %make_install
 
@@ -65,6 +80,9 @@ export LDFLAGS="$LDFLAGS -L$PWD"
 
 
 %changelog
+* Mon Dec 18 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-3
+- enable testsuite
+
 * Sat Dec 16 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-2
 - fixes per pre-review by Robert-André Mauchin (rhbz#1036130)
 - require proper postgresql-server version
