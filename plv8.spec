@@ -7,13 +7,14 @@
 Summary:	V8 Engine Javascript Procedural Language add-on for PostgreSQL
 Name:		%{sname}
 Version:	2.1.0
-Release:	3%{?dist}
+Release:	4%{?dist}
 License:	BSD
-Group:		Applications/Databases
-Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}.tar.gz
+Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}/%{name}-%{version}.tar.gz
 
-Patch0:		plv8-2.1.0-make.patch
-Patch1:		plv8-2.1.0-make-test.patch
+# Please self-document the patches inside.
+Patch0:		plv8-2.1.0-make-respects-CXXFLAGS.patch
+Patch1:		plv8-2.1.0-make-bug-1517657.patch
+Patch2:		plv8-2.1.0-make-test.patch
 
 URL:		https://github.com/plv8/plv8
 
@@ -57,7 +58,10 @@ export LDFLAGS="$LDFLAGS -L$PWD"
 %check
 make test || {
     find -name '*.diffs' -exec cat {} +
+# Known to fail on armv7hl architecture, reported in pull request #247.
+%ifnarch %arm
     false
+%endif
 }
 %endif
 
@@ -80,6 +84,11 @@ make test || {
 
 
 %changelog
+* Tue Dec 19 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-4
+- review fixes - per Robert-André Mauchin notes - better github source url,
+  drop Group tag, better format of patches (rhbz#1036130)
+- ignore test failure on %%arm (reported upstream in PR#247)
+
 * Mon Dec 18 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-3
 - enable testsuite
 

@@ -1,7 +1,9 @@
 From 5964c244b63d87f775e666157d1470ad91eb8e40 Mon Sep 17 00:00:00 2001
 From: Pavel Raiskup <praiskup@redhat.com>
 Date: Fri, 15 Dec 2017 17:28:56 +0100
-Subject: [PATCH 2/2] Take the standard $CXXFLAGS into account.
+Subject: Take the standard $CXXFLAGS into account.
+
+Proposed in https://github.com/plv8/plv8/pull/247
 
 ---
  Makefile | 2 +-
@@ -22,17 +24,3 @@ index 263d070..305999c 100644
  override CPPFLAGS += -I$(V8_SRCDIR) -I$(V8_SRCDIR)/include
 -- 
 2.14.3
-
-diff --git a/Makefile b/Makefile
-index f410301..2ed035b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -43,7 +43,7 @@ ifndef DISABLE_DIALECT
- REGRESS += dialect
- endif
- 
--SHLIB_LINK += -lv8
-+SHLIB_LINK += -lv8 $(RPM_HACK_LDFLAGS)
- ifdef V8_OUTDIR
- SHLIB_LINK += -L$(V8_OUTDIR)
- else
