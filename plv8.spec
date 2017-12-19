@@ -7,13 +7,17 @@
 Summary:	V8 Engine Javascript Procedural Language add-on for PostgreSQL
 Name:		%{sname}
 Version:	2.1.0
-Release:	4%{?dist}
+Release:	5%{?dist}
 License:	BSD
 Source0:	https://github.com/%{sname}/%{sname}/archive/v%{version}/%{name}-%{version}.tar.gz
 
-# Please self-document the patches inside.
+# Please self-document the patches inside ('git am' format for backports)
+# -----------------------------------------------------------------------
+# Ensure build system respects Fedora's CXXFLAGS for hardening.
 Patch0:		plv8-2.1.0-make-respects-CXXFLAGS.patch
+# Support RPM_HACK_LDFLAGS to work-around rhzb#1517657 below.
 Patch1:		plv8-2.1.0-make-bug-1517657.patch
+# Support for 'make test' in %%check section.
 Patch2:		plv8-2.1.0-make-test.patch
 
 URL:		https://github.com/plv8/plv8
@@ -84,6 +88,9 @@ make test || {
 
 
 %changelog
+* Tue Dec 19 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-5
+- review requirement - in-spec docs for patches (rhbz#1036130)
+
 * Tue Dec 19 2017 Pavel Raiskup <praiskup@redhat.com> - 2.1.0-4
 - review fixes - per Robert-André Mauchin notes - better github source url,
   drop Group tag, better format of patches (rhbz#1036130)
